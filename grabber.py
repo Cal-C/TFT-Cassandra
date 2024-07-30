@@ -1,5 +1,7 @@
 import json
 import os
+import csv
+
 from riotwatcher import LolWatcher, RiotWatcher, ApiError, TftWatcher
 from datetime import datetime, timedelta
 
@@ -9,17 +11,22 @@ APIKey = 'RGAPI-d75a075e-c977-4069-9f2f-cca213cef63e'
 riot_watcher = RiotWatcher(APIKey)
 tft_watcher = TftWatcher(APIKey)
 
-def fetch_and_store_matches(username, region='na1', json_file_path='matches.json', superRegion='AMERICAS', name_to_puuid_file_path='name_to_ids.txt'):
+def fetch_and_store_matches(username, region='na1', json_file_path='matches.json', superRegion='AMERICAS', name_to_puuid_file_path='player_data.csv'):
     my_account = riot_watcher.account.by_riot_id(superRegion, username, region)
     me = tft_watcher.summoner.by_puuid(region, my_account['puuid'])
     player_puuid = me['puuid']
 
+    
     # Load the existing name to puuid mapping if the file exists
+    name_to_puuid = {}
     if os.path.exists(name_to_puuid_file_path):
-        with open(name_to_puuid_file_path, 'r') as name_to_puuid_file:
-            name_to_puuid = json.load(name_to_puuid_file)
-    else:
-        name_to_puuid = {}
+        with open(name_to_puuid_file_path, 'r', newline='') as name_to_puuid_file:
+            reader = csv.DictReader(name_to_puuid_file)
+            for row in reader:
+                name_to_puuid[row['username']] = {
+                    'puuid': row['puuid'],
+                    'last_updated': row['last_updated']
+                }
 
     # Get the current datetime
     current_time = datetime.now()
@@ -44,8 +51,17 @@ def fetch_and_store_matches(username, region='na1', json_file_path='matches.json
         }
 
     # Write the updated mapping back to the file
-    with open(name_to_puuid_file_path, 'w') as name_to_puuid_file:
-        json.dump(name_to_puuid, name_to_puuid_file, indent=4)
+    with open(name_to_puuid_file_path, 'w', newline='') as name_to_puuid_file:
+        fieldnames = ['username', 'puuid', 'last_updated']
+        writer = csv.DictWriter(name_to_puuid_file, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        for name, data in name_to_puuid.items():
+            writer.writerow({
+                'username': name,
+                'puuid': data['puuid'],
+                'last_updated': data['last_updated']
+            })
 
     print(f"{username} has been added/updated.")
 

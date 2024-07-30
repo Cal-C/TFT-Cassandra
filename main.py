@@ -1,9 +1,24 @@
+import csv
+
+
 from grabber import fetch_and_store_matches
 from thinker import analyze_matches
 
 
-# List of usernames to fetch matches for
-usernames = ['MDE', 'BetterThanMDE']
+usernames_file_path = 'usernames.csv'  
+
+
+usernames = []
+
+# Read usernames from the CSV file
+with open(usernames_file_path, 'r', newline='') as usernames_file:
+    reader = csv.reader(usernames_file)
+    next(reader)  # Skip the header row
+    for row in reader:
+        usernames.append(row[0])
+
+print(usernames)
+
 
 # Loop through each username and call the function
 for username in usernames:

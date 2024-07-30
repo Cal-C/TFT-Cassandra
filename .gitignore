@@ -8,3 +8,5 @@ units.json
 __pycache__/grabber.cpython-312.pyc
 __pycache__/thinker.cpython-312.pyc
 name_to_ids.txt
+player_data.csv
+usernames.csv

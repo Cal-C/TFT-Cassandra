@@ -10,3 +10,6 @@ __pycache__/thinker.cpython-312.pyc
 name_to_ids.txt
 player_data.csv
 usernames.csv
+augment_placements.csv
+trait_placements.csv
+unit_placements.csv

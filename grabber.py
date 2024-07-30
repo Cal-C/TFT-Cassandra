@@ -5,8 +5,11 @@ import csv
 from riotwatcher import LolWatcher, RiotWatcher, ApiError, TftWatcher
 from datetime import datetime, timedelta
 
-
-APIKey = 'RGAPI-d75a075e-c977-4069-9f2f-cca213cef63e'
+APIKey = ''
+if os.path.exists('APIKey.txt'):
+    with open('APIKey.txt', 'r') as key_file:
+        APIKey = key_file.read().strip()
+print(APIKey)
 
 riot_watcher = RiotWatcher(APIKey)
 tft_watcher = TftWatcher(APIKey)

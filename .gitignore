@@ -1,0 +1,9 @@
+analyzed_data.json
+matches.json
+sorted_augment_placements.json
+sorted_placements.json
+sorted_trait_placements.json
+sorted_unit_placements.json
+units.json
+__pycache__/grabber.cpython-312.pyc
+__pycache__/thinker.cpython-312.pyc

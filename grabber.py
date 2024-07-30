@@ -3,7 +3,7 @@ import os
 import csv
 from datetime import datetime, timedelta
 
-from riotwatcher import LolWatcher, RiotWatcher, ApiError, TftWatcher
+from riotwatcher import RiotWatcher, ApiError, TftWatcher
 
 APIKey = ''
 if os.path.exists('APIKey.txt'):

@@ -22,6 +22,7 @@ print(f'Working on fetching users: {", ".join(usernames)}')
 # Loop through each username and call the function
 for username in usernames:
     fetch_and_store_matches(username)
-
+    
+#TODO: implement a cleaner function here to remove all matches that are not from the most recent patch
 
 unit_placements, trait_placements, augment_placements = analyze_matches('matches.json')

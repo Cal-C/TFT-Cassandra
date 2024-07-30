@@ -1,15 +1,33 @@
 import json
 import os
 import csv
+from datetime import datetime, timedelta
 
 from riotwatcher import LolWatcher, RiotWatcher, ApiError, TftWatcher
-from datetime import datetime, timedelta
 
 APIKey = ''
 if os.path.exists('APIKey.txt'):
+    # Get the modification time in seconds since the epoch
+    modification_time = os.path.getmtime('APIKey.txt')
+
+    # Convert the modification time to a datetime object
+    modification_datetime = datetime.fromtimestamp(modification_time)
+
+    # Calculate the age of the file
+    current_datetime = datetime.now()
+    age = current_datetime - modification_datetime
+
+    # Check if the file is less than a day old
+    if age > timedelta(days=1):
+        print("Update your APIkey! The APIKey.txt is more than a day old, and Riot requires you to regenerate your API key daily. You will likely get a 403 error if you try to use this key. Would you like to proceed anyway? (Y/N)")
+        response = input()
+        if response.lower() != 'y':
+            exit()
     with open('APIKey.txt', 'r') as key_file:
         APIKey = key_file.read().strip()
-print(APIKey)
+else:
+    print("APIKey.txt not found. Please create a file named APIKey.txt with your Riot API key in it.")
+    exit()
 
 riot_watcher = RiotWatcher(APIKey)
 tft_watcher = TftWatcher(APIKey)
@@ -19,7 +37,6 @@ def fetch_and_store_matches(username, region='na1', json_file_path='matches.json
     me = tft_watcher.summoner.by_puuid(region, my_account['puuid'])
     player_puuid = me['puuid']
 
-    
     # Load the existing name to puuid mapping if the file exists
     name_to_puuid = {}
     if os.path.exists(name_to_puuid_file_path):
@@ -40,8 +57,8 @@ def fetch_and_store_matches(username, region='na1', json_file_path='matches.json
         last_updated = datetime.fromisoformat(name_to_puuid[username]['last_updated'])
         
         # Check if the last update was within the last 3 days
-        if current_time - last_updated < timedelta(days=3):
-            print(f"{username} was updated within the last 3 days. Not bothering to update data on this user")
+        if current_time - last_updated < timedelta(days=2):
+            print(f"{username} was updated within the last 2 days. Not bothering to update data on this user")
             return True
         else:
             # Update the datetime if the last update was more than 3 days ago

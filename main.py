@@ -11,7 +11,3 @@ for username in usernames:
 
 
 unit_placements, trait_placements, augment_placements = analyze_matches('matches.json', 'analyzed_data.json')
-
-print(unit_placements)
-print(trait_placements)
-print(augment_placements)

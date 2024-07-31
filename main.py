@@ -3,6 +3,7 @@ import csv
 
 from grabber import fetch_and_store_matches
 from thinker import analyze_matches
+from cleaner import remove_old_tft_matches
 
 
 usernames_file_path = 'usernames.csv'  
@@ -22,7 +23,7 @@ print(f'Working on fetching users: {", ".join(usernames)}')
 # Loop through each username and call the function
 for username in usernames:
     fetch_and_store_matches(username)
-    
-#TODO: implement a cleaner function here to remove all matches that are not from the most recent patch
+
+remove_old_tft_matches()
 
 unit_placements, trait_placements, augment_placements = analyze_matches('matches.json')

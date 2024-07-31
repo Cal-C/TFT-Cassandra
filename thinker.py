@@ -8,7 +8,7 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
         players = json.load(json_file)
 
     # Debugging: Print the keys of the matches dictionary
-    print("Keys in matches dictionary:", players.keys())
+    print("Number of keys in matches dictionary after reading", json_file_path, ":", len(players.keys()))
 
     # Initialize dictionaries to store total placements and counts for units, traits, and augments
     unit_placements = defaultdict(lambda: {'total_placement': 0, 'count': 0})

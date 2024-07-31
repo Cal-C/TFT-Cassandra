@@ -22,6 +22,8 @@ if os.path.exists('APIKey.txt'):
         response = input()
         if response.lower() != 'y':
             exit()
+    #else:
+        #print(f"APIKey.txt is less than a day old. With an age of {age} Proceeding with API key retrieval.")
     with open('APIKey.txt', 'r') as key_file:
         APIKey = key_file.read().strip()
 else:

@@ -5,6 +5,10 @@ def extract_version(version_string):
     match = re.search(r'\d+\.\d+', version_string)
     return match.group(0) if match else None
 
+def version_numbers(version_string):
+    major, minor = map(int, version_string.split('.'))
+    return (major, minor)
+
 def get_latest_tft_version():
     with open('matches.json') as file:
         matches = json.load(file)
@@ -21,7 +25,7 @@ def get_latest_tft_version():
                 if version:
                     versions.add(version)
     
-    latest_version = max(versions)
+    latest_version = max(versions, key=version_numbers)
     print(f'Latest version: {latest_version}')
     
     return latest_version

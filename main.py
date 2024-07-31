@@ -25,4 +25,4 @@ for username in usernames:
 
 remove_old_tft_matches()
 
-unit_placements, trait_placements, augment_placements = analyze_matches('matches.json')
+unit_placements, main_trait_placements, side_trait_placements, augment_placements = analyze_matches('matches.json')

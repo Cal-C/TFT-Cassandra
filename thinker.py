@@ -2,7 +2,9 @@ import json
 import csv
 from collections import defaultdict
 
-def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placements.csv', trait_output_file='trait_placements.csv', augment_output_file='augment_placements.csv'):
+MAIN_UNIT_NUMBER_THRESHOLD = 4
+
+def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placements.csv', main_trait_output_file='main_trait_placements.csv', side_trait_output_file= 'side_trait_placements.csv', augment_output_file='augment_placements.csv'):
     # Load the matches data
     with open(json_file_path, 'r') as json_file:
         players = json.load(json_file)
@@ -12,7 +14,8 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
 
     # Initialize dictionaries to store total placements and counts for units, traits, and augments
     unit_placements = defaultdict(lambda: {'total_placement': 0, 'count': 0})
-    trait_placements = defaultdict(lambda: {'total_placement': 0, 'count': 0})
+    main_trait_placements = defaultdict(lambda: {'total_placement': 0, 'count': 0})
+    side_trait_placements = defaultdict(lambda: {'total_placement': 0, 'count': 0})
     augment_placements = defaultdict(lambda: {'total_placement': 0, 'count': 0})
 
     for player_puuid, matches in players.items():
@@ -37,9 +40,12 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
                 # Iterate through each trait in the participant's data
                 for trait in participant_data['traits']:
                     trait_name = trait['name']
-                    # Update the total placements and counts in the dictionary
-                    trait_placements[trait_name]['total_placement'] += placement
-                    trait_placements[trait_name]['count'] += 1
+                    if trait['num_units'] >= MAIN_UNIT_NUMBER_THRESHOLD:
+                        main_trait_placements[trait_name]['total_placement'] += placement
+                        main_trait_placements[trait_name]['count'] += 1
+                    else:
+                        side_trait_placements[trait_name]['total_placement'] += placement
+                        side_trait_placements[trait_name]['count'] += 1
 
                 # Iterate through each augment in the participant's data
                 for augment in participant_data['augments']:
@@ -62,13 +68,14 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
     write_sorted_csv(unit_output_file, ['Unit Name', 'Average Placement', 'Total Placement', 'Count'], unit_placements)
 
     # Write trait placements to CSV
-    write_sorted_csv(trait_output_file, ['Trait Name', 'Average Placement', 'Total Placement', 'Count'], trait_placements)
+    write_sorted_csv(main_trait_output_file, ['Trait Name', 'Average Placement', 'Total Placement', 'Count'], main_trait_placements)
+    write_sorted_csv(side_trait_output_file, ['Trait Name', 'Average Placement', 'Total Placement', 'Count'], side_trait_placements)
 
     # Write augment placements to CSV
     write_sorted_csv(augment_output_file, ['Augment Name', 'Average Placement', 'Total Placement', 'Count'], augment_placements)
 
     print(f"Unit placements have been written to {unit_output_file}")
-    print(f"Trait placements have been written to {trait_output_file}")
+    print(f"Trait placements have been written to {main_trait_output_file} and {side_trait_output_file}")
     print(f"Augment placements have been written to {augment_output_file}")
 
-    return unit_placements, trait_placements, augment_placements
+    return unit_placements, main_trait_placements, side_trait_placements, augment_placements

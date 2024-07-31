@@ -5,9 +5,7 @@ sorted_placements.json
 sorted_trait_placements.json
 sorted_unit_placements.json
 units.json
-__pycache__
-__pycache__/grabber.cpython-312.pyc
-__pycache__/thinker.cpython-312.pyc
+__pycache__/
 name_to_ids.txt
 player_data.csv
 usernames.csv

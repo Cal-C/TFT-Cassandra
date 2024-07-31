@@ -15,3 +15,6 @@ unit_placements.csv
 APIkey.txt
 main_trait_placements.csv
 side_trait_placements.csv
+images/
+tft-champion.json
+DragonData/

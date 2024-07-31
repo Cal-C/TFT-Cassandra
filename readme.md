@@ -1,0 +1,3 @@
+To run this project get an API key from https://developer.riotgames.com/ and put it in a file called `APIkey.txt` in the root of the project.
+
+Make a list of users you want to get data from in a file called usernames.csv in the root of the project. The file should be in the format `username,region, ` where region is the region the user is in. The region should be the same as the region in the API key. Maybe making lists should be automated in the future.

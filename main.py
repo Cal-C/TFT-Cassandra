@@ -4,7 +4,10 @@ import csv
 from grabber import fetch_and_store_matches
 from thinker import analyze_matches
 from cleaner import remove_old_tft_matches
+from DragonTamer import update_all_dragon_data
 
+
+update_all_dragon_data()
 
 usernames_file_path = 'usernames.csv'  
 

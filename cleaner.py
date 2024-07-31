@@ -51,7 +51,7 @@ def remove_old_tft_matches():
         updated_matches[player_puuid] = updated_player_matches
     
     #remove users with no matches
-    updated_matches = {player_puuid: player_matches for player_puuid, player_matches in matches.items() if player_matches}
+    updated_matches = {player_puuid: player_matches for player_puuid, player_matches in updated_matches.items() if player_matches}
 
     
     with open('matches.json', 'w') as file:

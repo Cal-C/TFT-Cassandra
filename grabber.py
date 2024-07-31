@@ -7,7 +7,6 @@ from riotwatcher import RiotWatcher, ApiError, TftWatcher
 
 APIKey = ''
 if os.path.exists('APIKey.txt'):
-    # Get the modification time in seconds since the epoch
     modification_time = os.path.getmtime('APIKey.txt')
 
     # Convert the modification time to a datetime object

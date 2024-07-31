@@ -20,7 +20,6 @@ with open(usernames_file_path, 'r', newline='') as usernames_file:
 
 print(f'Working on fetching users: {", ".join(usernames)}')
 
-# Loop through each username and call the function
 for username in usernames:
     fetch_and_store_matches(username)
 

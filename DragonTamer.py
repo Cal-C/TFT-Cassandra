@@ -4,30 +4,29 @@ import os
 import requests
 
 #📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷
-def get_champion_image_urls():
-    champion_urls = []
-    with open('DragonData/tft-champion.json') as f:
-        champion_data = json.load(f)
+def get_image_urls(json_file_path, csv_file_path, json_key, url_template):
+    image_urls = []
+    with open(f'DragonData/{json_file_path}') as f:
+        data = json.load(f)
         
-        with open('unit_placements.csv') as csv_file:
+        with open(csv_file_path) as csv_file:
             csv_reader = csv.DictReader(csv_file)
+            first_row = next(csv_reader)
             
             for row in csv_reader:
-                champion_name = row['Unit Name']
+                item_name = row['Name']
                 
-                # Iterate over the keys of champion_data['data']
-                for key in champion_data['data']:
-                    # Check if the key ends with champion_name
-                    if key.endswith(champion_name):
-                        champion = champion_data['data'][key]
-                        champion_urls.append(f"https://ddragon.leagueoflegends.com/cdn/14.15.1/img/tft-champion/{champion['image']['full']}")
+                # Iterate over the keys of data[json_key]
+                for key in data[json_key]:
+                    # Check if the key ends with item_name
+                    if key.endswith(item_name):
+                        item = data[json_key][key]
+                        image_urls.append(url_template.format(item['image']['full']))
                         break
     
-    return champion_urls
+    return image_urls
 
-def download_champion_image(url, filename):
-    folder_path = 'images/champions'
-    
+def download_image(url, folder_path, filename):
     # Ensure the folder exists
     os.makedirs(folder_path, exist_ok=True)
     
@@ -40,13 +39,28 @@ def download_champion_image(url, filename):
             file.write(response.content)
         print(f"Downloaded {filename}")
 
-def download_champion_images():
-    champion_image_urls = get_champion_image_urls()
+def download_images(json_file_path, csv_file_path, json_key, url_template, folder_path):
+    image_urls = get_image_urls(json_file_path, csv_file_path, json_key, url_template)
     
-    for url in champion_image_urls:
+    for url in image_urls:
         # Extract the filename from the URL
         filename = url.split('/')[-1]
-        download_champion_image(url, filename)
+        download_image(url, folder_path, filename)
+
+def download_all_images():
+    latest_version = get_latest_version()
+    json_csv_url_pairs = [
+        ('tft-champion.json', 'unit_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-champion/{{}}', 'images/champions'),
+        ('tft-item.json', 'item_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-item/{{}}', 'images/items'),
+        ('tft-trait.json', 'total_trait_placement.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-trait/{{}}', 'images/traits'),
+        ('tft-augments.json', 'augment_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-augment/{{}}', 'images/augments')
+    ]
+    json_key = 'data'
+
+    for json_file, csv_file, url_template, folder_path in json_csv_url_pairs:
+        download_images(json_file, csv_file, json_key, url_template, folder_path)
+
+
 
 #📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜
 def get_latest_version():
@@ -61,7 +75,7 @@ def update_all_json_data():
     investigate_json(latest_version, 'tft-champion.json')
     investigate_json(latest_version, 'tft-item.json')
     investigate_json(latest_version, 'tft-trait.json')
-    investigate_json(latest_version, 'tft-augment.json')
+    investigate_json(latest_version, 'tft-augments.json')
 
 def investigate_json(latest_version, filename):
     if os.path.exists(f'DragonData/{filename}'):
@@ -87,7 +101,7 @@ def download_json(version, filename):
 def update_all_dragon_data():
     update_all_json_data()
 
-    download_champion_images()
+    download_all_images()
     
     print("All dragon data updated.")
 

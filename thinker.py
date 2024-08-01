@@ -88,6 +88,6 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
     print(f"Trait placements have been written to {total_trait_output_file} {main_trait_output_file} and {side_trait_output_file}")
     print(f"Augment placements have been written to {augment_output_file}")
 
-    return unit_placements, main_trait_placements, side_trait_placements, augment_placements
+    return unit_placements, main_trait_placements, side_trait_placements, main_trait_placements, augment_placements, item_placements
 
 analyze_matches()

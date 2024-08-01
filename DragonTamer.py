@@ -6,15 +6,16 @@ import requests
 #📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷📷
 def get_image_urls(json_file_path, csv_file_path, json_key, url_template):
     image_urls = []
+    item_names = []
     with open(f'DragonData/{json_file_path}') as f:
         data = json.load(f)
         
         with open(csv_file_path) as csv_file:
             csv_reader = csv.DictReader(csv_file)
-            first_row = next(csv_reader)
             
             for row in csv_reader:
                 item_name = row['Name']
+                item_names.append(item_name)
                 
                 # Iterate over the keys of data[json_key]
                 for key in data[json_key]:
@@ -24,7 +25,7 @@ def get_image_urls(json_file_path, csv_file_path, json_key, url_template):
                         image_urls.append(url_template.format(item['image']['full']))
                         break
     
-    return image_urls
+    return image_urls, item_names
 
 def download_image(url, folder_path, filename):
     # Ensure the folder exists
@@ -39,26 +40,29 @@ def download_image(url, folder_path, filename):
             file.write(response.content)
         print(f"Downloaded {filename}")
 
-def download_images(json_file_path, csv_file_path, json_key, url_template, folder_path):
-    image_urls = get_image_urls(json_file_path, csv_file_path, json_key, url_template)
+def download_images(json_file_path, csv_file_path, json_key, url_template, folder_path, verbose=False):
+    image_urls, item_names = get_image_urls(json_file_path, csv_file_path, json_key, url_template)
     
-    for url in image_urls:
-        # Extract the filename from the URL
-        filename = url.split('/')[-1]
+    for url, item_name in zip(image_urls, item_names):
+        if verbose:
+            print(f"Downloading {url}")
+        # Use the item name from the CSV row as the filename
+        filename = f"{item_name}.png"
         download_image(url, folder_path, filename)
+
 
 def download_all_images():
     latest_version = get_latest_version()
     json_csv_url_pairs = [
-        ('tft-champion.json', 'unit_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-champion/{{}}', 'images/champions'),
-        ('tft-item.json', 'item_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-item/{{}}', 'images/items'),
-        ('tft-trait.json', 'total_trait_placement.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-trait/{{}}', 'images/traits'),
-        ('tft-augments.json', 'augment_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-augment/{{}}', 'images/augments')
+        ('tft-champion.json', 'unit_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-champion/{{}}', 'images/champions', False),
+        ('tft-item.json', 'item_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-item/{{}}', 'images/items', False),
+        ('tft-trait.json', 'total_trait_placement.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-trait/{{}}', 'images/traits', False),
+        ('tft-augments.json', 'augment_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-augment/{{}}', 'images/augments', False)
     ]
     json_key = 'data'
 
-    for json_file, csv_file, url_template, folder_path in json_csv_url_pairs:
-        download_images(json_file, csv_file, json_key, url_template, folder_path)
+    for json_file, csv_file, url_template, folder_path, verbosity in json_csv_url_pairs:
+        download_images(json_file, csv_file, json_key, url_template, folder_path, verbosity)
 
 
 

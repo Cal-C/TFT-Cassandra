@@ -1,17 +1,18 @@
 import json
 import csv
+import os
+
 from collections import defaultdict
 
 MAIN_UNIT_NUMBER_THRESHOLD = 4
 
 
 
-def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placements.csv', main_trait_output_file='main_trait_placements.csv', side_trait_output_file= 'side_trait_placements.csv', total_trait_output_file = 'total_trait_placement.csv', augment_output_file='augment_placements.csv', item_output_file='item_placements.csv'):
+def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placements.csv', main_trait_output_file='main_trait_placements.csv', side_trait_output_file= 'side_trait_placements.csv', total_trait_output_file = 'total_trait_placement.csv', augment_output_file='augment_placements.csv', item_output_file='item_placements.csv', csvPlacementFolder = 'Data/csvPlacements/'):
     # Load the matches data
     with open(json_file_path, 'r') as json_file:
         players = json.load(json_file)
 
-    # Debugging: Print the keys of the matches dictionary
     print("Number of keys in matches dictionary after reading", json_file_path, ":", len(players.keys()))
 
     # Initialize dictionaries to store total placements and counts for units, traits, and augments
@@ -37,9 +38,10 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
                 # Iterate through each unit in the participant's data
                 for unit in participant_data['units']:
                     unit_name = unit['character_id']
-                    # Update the total placements and counts in the dictionary
-                    unit_placements[unit_name]['total_placement'] += placement
-                    unit_placements[unit_name]['count'] += 1
+                    if unit_name != 'TFT12_Yuumi': #yuumi is always paired with nora so no reason to collect data on her placements since she breaks graphs
+                        # Update the total placements and counts in the dictionary
+                        unit_placements[unit_name]['total_placement'] += placement
+                        unit_placements[unit_name]['count'] += 1
                     for item in unit['itemNames']:
                         item_name = item
                         item_placements[item_name]['total_placement'] += placement
@@ -74,19 +76,21 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
                 average_placement = round(data['total_placement'] / data['count'], 2)
                 writer.writerow([name, average_placement, data['total_placement'], data['count']])
 
-    write_sorted_csv(unit_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], unit_placements)
+    os.makedirs(csvPlacementFolder, exist_ok=True)
 
-    write_sorted_csv(main_trait_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], main_trait_placements)
-    write_sorted_csv(side_trait_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], side_trait_placements)
-    write_sorted_csv(total_trait_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], total_trait_placements)
+    write_sorted_csv(csvPlacementFolder + unit_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], unit_placements)
 
-    write_sorted_csv(augment_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], augment_placements)
+    write_sorted_csv(csvPlacementFolder + main_trait_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], main_trait_placements)
+    write_sorted_csv(csvPlacementFolder + side_trait_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], side_trait_placements)
+    write_sorted_csv(csvPlacementFolder + total_trait_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], total_trait_placements)
 
-    write_sorted_csv(item_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], item_placements)
+    write_sorted_csv(csvPlacementFolder + augment_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], augment_placements)
 
-    print(f"Unit placements have been written to {unit_output_file}")
-    print(f"Trait placements have been written to {total_trait_output_file} {main_trait_output_file} and {side_trait_output_file}")
-    print(f"Augment placements have been written to {augment_output_file}")
+    write_sorted_csv(csvPlacementFolder + item_output_file, ['Name', 'Average Placement', 'Total Placement', 'Count'], item_placements)
+
+    print(f"Unit placements have been written to {csvPlacementFolder + unit_output_file}")
+    print(f"Trait placements have been written to {csvPlacementFolder + total_trait_output_file} {csvPlacementFolder + main_trait_output_file} and {csvPlacementFolder + side_trait_output_file}")
+    print(f"Augment placements have been written to {csvPlacementFolder + augment_output_file}")
 
     return unit_placements, main_trait_placements, side_trait_placements, main_trait_placements, augment_placements, item_placements
 

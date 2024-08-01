@@ -7,7 +7,7 @@ import requests
 def get_image_urls(json_file_path, csv_file_path, json_key, url_template):
     image_urls = []
     item_names = []
-    with open(f'DragonData/{json_file_path}') as f:
+    with open(f'Data/DragonData/{json_file_path}') as f:
         data = json.load(f)
         
         with open(csv_file_path) as csv_file:
@@ -15,15 +15,16 @@ def get_image_urls(json_file_path, csv_file_path, json_key, url_template):
             
             for row in csv_reader:
                 item_name = row['Name']
-                item_names.append(item_name)
-                
-                # Iterate over the keys of data[json_key]
-                for key in data[json_key]:
-                    # Check if the key ends with item_name
-                    if key.endswith(item_name):
-                        item = data[json_key][key]
-                        image_urls.append(url_template.format(item['image']['full']))
-                        break
+                if item_name != 'TFT12_Yuumi':
+                    item_names.append(item_name)
+                    
+                    # Iterate over the keys of data[json_key]
+                    for key in data[json_key]:
+                        # Check if the key ends with item_name
+                        if key.endswith(item_name):
+                            item = data[json_key][key]
+                            image_urls.append(url_template.format(item['image']['full']))
+                            break
     
     return image_urls, item_names
 
@@ -45,19 +46,20 @@ def download_images(json_file_path, csv_file_path, json_key, url_template, folde
     
     for url, item_name in zip(image_urls, item_names):
         if verbose:
-            print(f"Downloading {url}")
+            print(f"Downloading {url} as {item_name}.png")
         # Use the item name from the CSV row as the filename
         filename = f"{item_name}.png"
         download_image(url, folder_path, filename)
 
 
 def download_all_images():
+    csvPlacementFolder = 'Data/csvPlacements/'
     latest_version = get_latest_version()
     json_csv_url_pairs = [
-        ('tft-champion.json', 'unit_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-champion/{{}}', 'images/champions', False),
-        ('tft-item.json', 'item_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-item/{{}}', 'images/items', False),
-        ('tft-trait.json', 'total_trait_placement.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-trait/{{}}', 'images/traits', False),
-        ('tft-augments.json', 'augment_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-augment/{{}}', 'images/augments', False)
+        ('tft-champion.json', f'{csvPlacementFolder}unit_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-champion/{{}}', 'images/champions', True),
+        ('tft-item.json', f'{csvPlacementFolder}item_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-item/{{}}', 'images/items', False),
+        ('tft-trait.json', f'{csvPlacementFolder}total_trait_placement.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-trait/{{}}', 'images/traits', False),
+        ('tft-augments.json', f'{csvPlacementFolder}augment_placements.csv', f'https://ddragon.leagueoflegends.com/cdn/{latest_version}/img/tft-augment/{{}}', 'images/augments', False)
     ]
     json_key = 'data'
 
@@ -82,8 +84,8 @@ def update_all_json_data():
     investigate_json(latest_version, 'tft-augments.json')
 
 def investigate_json(latest_version, filename):
-    if os.path.exists(f'DragonData/{filename}'):
-        with open(f'DragonData/{filename}', 'r') as file:
+    if os.path.exists(f'Data/DragonData/{filename}'):
+        with open(f'Data/DragonData/{filename}', 'r') as file:
             champion_data = json.load(file)
             
             version = champion_data['version']
@@ -97,17 +99,16 @@ def investigate_json(latest_version, filename):
 def download_json(version, filename):
     url = f'https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/{filename}'
     response = requests.get(url)
-    with open(f'DragonData/{filename}', 'w') as file:
+    with open(f'Data/DragonData/{filename}', 'w') as file:
         file.write(response.text)
     print(f"Downloaded {filename}")
 
 
 def update_all_dragon_data():
+    os.makedirs('Data/DragonData', exist_ok=True)
+
     update_all_json_data()
 
     download_all_images()
     
     print("All dragon data updated.")
-
-
-update_all_dragon_data()

@@ -5,7 +5,7 @@ from grabber import fetch_and_store_matches
 from thinker import analyze_matches
 from cleaner import remove_old_tft_matches
 from DragonTamer import update_all_dragon_data
-from grapher import visualize_data
+from grapher import make_graphs
 
 
 update_all_dragon_data()
@@ -31,7 +31,5 @@ remove_old_tft_matches()
 
 unit_placements, main_trait_placements, side_trait_placements, total_trait_placements, augment_placements, item_placements = analyze_matches('matches.json')
 
-print(item_placements)
-
-visualize_data(unit_placements, main_trait_placements, side_trait_placements, total_trait_placements, augment_placements, item_placements)
+make_graphs()
 

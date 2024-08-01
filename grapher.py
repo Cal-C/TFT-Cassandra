@@ -4,9 +4,10 @@ import os
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from PIL import Image
 
-def visualize_data(csv_file_path, image_folder_path, plot_title, x_label):
+def visualize_csv_data(csv_file_path, image_folder_path, plot_title, x_label):
     # Read the CSV file
-    with open(csv_file_path) as f:
+    csvPlacementFolder = 'Data/csvPlacements/'
+    with open(csvPlacementFolder+csv_file_path) as f:
         data = f.read()
 
     # Parse the data
@@ -56,8 +57,9 @@ def visualize_data(csv_file_path, image_folder_path, plot_title, x_label):
     plt.tight_layout()
     plt.show()
 
-# Example usage
-visualize_data('item_placements.csv', 'images/items', 'Average Placement of Items', 'Items')
-visualize_data('unit_placements.csv', 'images/champions', 'Average Placement of Champions', 'Champions')
-visualize_data('total_trait_placement.csv', 'images/traits', 'Average Placement of Traits', 'Traits')
-visualize_data('augment_placements.csv', 'images/augments', 'Average Placement of Augments', 'Augments')
+
+def make_graphs():
+    visualize_csv_data('item_placements.csv', 'images/items', 'Average Placement of Items', 'Items')
+    visualize_csv_data('unit_placements.csv', 'images/champions', 'Average Placement of Champions', 'Champions')
+    visualize_csv_data('total_trait_placement.csv', 'images/traits', 'Average Placement of Traits', 'Traits')
+    visualize_csv_data('augment_placements.csv', 'images/augments', 'Average Placement of Augments', 'Augments')

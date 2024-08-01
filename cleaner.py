@@ -1,5 +1,10 @@
 import json
 import re
+import os
+
+from collections import defaultdict
+
+
 
 def extract_version(version_string):
     match = re.search(r'\d+\.\d+', version_string)
@@ -37,6 +42,7 @@ def remove_old_tft_matches():
         matches = json.load(file)
     
     updated_matches = {}
+    matches_from_old_version = {}
     for player_puuid, player_matches in matches.items():
         updated_player_matches = []
         for match in player_matches:
@@ -47,6 +53,10 @@ def remove_old_tft_matches():
             version = extract_version(match['info']['game_version'])
             if version == latest_version:
                 updated_player_matches.append(match)
+            else:
+                if player_puuid not in matches_from_old_version:
+                    matches_from_old_version[player_puuid] = []
+                matches_from_old_version[player_puuid].append(match)
         
         updated_matches[player_puuid] = updated_player_matches
     
@@ -56,3 +66,20 @@ def remove_old_tft_matches():
     
     with open('matches.json', 'w') as file:
         json.dump(updated_matches, file, indent=4)
+
+    matches_by_version_and_player = defaultdict(lambda: defaultdict(list))
+
+    for player_puuid, old_version_matches in matches_from_old_version.items():
+        for match in old_version_matches:
+            version = extract_version(match['info']['game_version'])
+            if version:
+                matches_by_version_and_player[version][player_puuid].append(match)
+
+    if not os.path.exists('OldMatches'):
+        os.makedirs('OldMatches')
+        
+    # Write the grouped matches to files
+    for version, players_matches in matches_by_version_and_player.items():
+        filename = f"OldMatches/matches_{version}.json"
+        with open(filename, 'w') as file:
+            json.dump(players_matches, file, indent=4)

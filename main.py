@@ -4,7 +4,7 @@ import csv
 from grabber import fetch_and_store_matches
 from thinker import analyze_matches
 from cleaner import remove_old_tft_matches
-from DragonTamer import update_all_dragon_data
+from DragonTamer import update_all_dragon_data , download_all_images
 from grapher import make_graphs
 
 
@@ -28,6 +28,9 @@ for username in usernames:
     fetch_and_store_matches(username)
 
 remove_old_tft_matches()
+
+download_all_images()
+
 
 unit_placements, main_trait_placements, side_trait_placements, total_trait_placements, augment_placements, item_placements = analyze_matches('matches.json')
 

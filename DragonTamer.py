@@ -15,7 +15,9 @@ def get_image_urls(json_file_path, csv_file_path, json_key, url_template):
             
             for row in csv_reader:
                 item_name = row['Name']
-                if item_name != 'TFT12_Yuumi':
+                if item_name not in ['TFT12_Yuumi', 'TFT_ElderDragon']:
+                    # Yuumi is always paired with Nora, so no reason to collect data on her placements since she breaks graphs.
+                    # Elder Dragon is similar to Yuumi but is actually a buff to the player and not a unit.
                     item_names.append(item_name)
                     
                     # Iterate over the keys of data[json_key]

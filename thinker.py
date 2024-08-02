@@ -38,7 +38,7 @@ def analyze_matches(json_file_path='matches.json', unit_output_file='unit_placem
                 # Iterate through each unit in the participant's data
                 for unit in participant_data['units']:
                     unit_name = unit['character_id']
-                    if unit_name != 'TFT12_Yuumi': #yuumi is always paired with nora so no reason to collect data on her placements since she breaks graphs
+                    if unit_name not in ['TFT12_Yuumi', 'TFT_ElderDragon']: #yuumi is always paired with nora so no reason to collect data on her placements since she breaks graphs
                         # Update the total placements and counts in the dictionary
                         unit_placements[unit_name]['total_placement'] += placement
                         unit_placements[unit_name]['count'] += 1

@@ -4,8 +4,15 @@ from bokeh.io import output_file, save
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, ImageURL, HoverTool
 from bokeh.layouts import column
-from PIL import Image
 import webbrowser
+import re
+
+def normalize_name(name):
+    # Extract the part after the final underscore
+    name = name.rsplit('_', 1)[-1]
+    # Add a space before every capital letter other than the first
+    name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name)
+    return name
 
 def visualize_csv_data(csv_file_path, image_folder_path, plot_title, x_label):
     # Read the CSV file
@@ -41,24 +48,24 @@ def visualize_csv_data(csv_file_path, image_folder_path, plot_title, x_label):
     source = ColumnDataSource(data=dict(
         names=names,
         avg_placements=avg_placements,
-        image_urls=image_urls
+        image_urls=image_urls,
+        display_names=[normalize_name(name) for name in names]
     ))
 
     # Create a plot
-    p = figure(x_range=names, height=600, width=800, title=plot_title,
+    p = figure(x_range=[normalize_name(name) for name in names], height=600, width=800, title=plot_title,
                toolbar_location=None, tools="")
 
-    # Add bars
-    p.scatter(x='names', y='avg_placements', size=10, source=source, legend_field="names",
-           line_color='white', fill_color='skyblue')
+    # Add dots
+    p.scatter(x='display_names', y='avg_placements', size=10, source=source, legend_field="display_names", line_color='white', fill_color='skyblue')
 
-    # Add images
-    p.add_glyph(source, ImageURL(url="image_urls", x="names", y=0, w=0.1, h=0.1, anchor="center"))
+    # Add images at the bottom
+    p.add_glyph(source, ImageURL(url="image_urls", x="display_names", y=0, w=1, h=1, anchor="bottom_center"))
 
     # Customize plot
     p.xgrid.grid_line_color = None
     p.y_range.start = 0
-    p.xaxis.axis_label = x_label
+    p.xaxis.visible = False  # Hide the x-axis labels
     p.yaxis.axis_label = 'Average Placement'
     p.legend.orientation = "horizontal"
     p.legend.location = "top_center"
@@ -66,9 +73,8 @@ def visualize_csv_data(csv_file_path, image_folder_path, plot_title, x_label):
     # Add hover tool
     hover = HoverTool()
     hover.tooltips = [
-        ("Name", "@names"),
+        ("Name", "@display_names"),
         ("Average Placement", "@avg_placements"),
-        ("image", "<img src='@image_urls' width='50' height='50'>")
     ]
     p.add_tools(hover)
 
@@ -85,9 +91,11 @@ def make_graphs():
     layout = column(*plots)
 
     # Output to a single HTML file
-    output_file("Output/combined_plots.html")
+    output_file_path = os.path.abspath("Output/combined_plots.html")
+    output_file(output_file_path)
     save(layout)
-    webbrowser.open("Output/combined_plots.html")
 
+    # Automatically open the HTML file in the default web browser
+    webbrowser.open(output_file_path)
 
 make_graphs()

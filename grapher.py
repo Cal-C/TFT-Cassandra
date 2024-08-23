@@ -1,65 +1,93 @@
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import os
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+import pandas as pd
+from bokeh.io import output_file, save
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, ImageURL, HoverTool
+from bokeh.layouts import column
 from PIL import Image
+import webbrowser
 
 def visualize_csv_data(csv_file_path, image_folder_path, plot_title, x_label):
     # Read the CSV file
     csvPlacementFolder = 'Data/csvPlacements/'
-    with open(csvPlacementFolder+csv_file_path) as f:
-        data = f.read()
+    data = pd.read_csv(csvPlacementFolder + csv_file_path)
+    print('Data read from', csvPlacementFolder + csv_file_path)
 
     # Parse the data
     items = []
-    for line in data.strip().split('\n')[1:]:  # Skip the header
-        name, avg_placement, total_placement, count = line.split(',')
+    for _, row in data.iterrows():
         items.append({
-            'name': name,
-            'avg_placement': float(avg_placement),
-            'total_placement': int(total_placement),
-            'count': int(count)
+            'name': row['Name'],
+            'avg_placement': float(row['Average Placement']),
+            'total_placement': int(row['Total Placement']),
+            'count': int(row['Count'])
         })
-
-    # Create a plot
-    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Extract data for plotting
     names = [item['name'] for item in items]
     avg_placements = [item['avg_placement'] for item in items]
+    image_urls = []
 
-    # Create bar chart
-    bars = ax.bar(range(len(names)), avg_placements, color='skyblue')
-    # Replace item names with images on the x-axis
-    for i, item in enumerate(items):
+    for item in items:
         image_path = os.path.join(image_folder_path, f"{item['name']}.png")
         if os.path.exists(image_path):
-            # Open the image and resize it to a fixed size
-            img = Image.open(image_path)
-            img = img.resize((20, 20), Image.LANCZOS)  # Resize to 20x20 pixels
-            img = mpimg.pil_to_array(img)
-            imagebox = OffsetImage(img, zoom=1)  # No zoom needed as we resized the image
-            if('Traits' == x_label):
-                ax.axhspan(-0.5, -.125, facecolor='black', alpha=0.5)  # Add black background behind x label
-            ab = AnnotationBbox(imagebox, (i, 0), frameon=False, xybox=(0, -20), xycoords='data', boxcoords="offset points", pad=0)
-            ax.add_artist(ab)
-                
+            # Save the image URL for Bokeh
+            image_urls.append(image_path)
         else:
             print(f"Image not found for item: {item['name']}")
+            image_urls.append(None)
 
-    # Add labels and title
-    ax.set_xlabel(x_label)
-    ax.set_ylabel('Average Placement')
-    ax.set_title(plot_title)
-    ax.set_xticks(range(len(names)))
-    ax.set_xticklabels([''] * len(names))  # Remove text labels
+    # Create a ColumnDataSource
+    source = ColumnDataSource(data=dict(
+        names=names,
+        avg_placements=avg_placements,
+        image_urls=image_urls
+    ))
 
-    plt.tight_layout()
-    plt.show()
+    # Create a plot
+    p = figure(x_range=names, height=600, width=800, title=plot_title,
+               toolbar_location=None, tools="")
 
+    # Add bars
+    p.scatter(x='names', y='avg_placements', size=10, source=source, legend_field="names",
+           line_color='white', fill_color='skyblue')
+
+    # Add images
+    p.add_glyph(source, ImageURL(url="image_urls", x="names", y=0, w=0.1, h=0.1, anchor="center"))
+
+    # Customize plot
+    p.xgrid.grid_line_color = None
+    p.y_range.start = 0
+    p.xaxis.axis_label = x_label
+    p.yaxis.axis_label = 'Average Placement'
+    p.legend.orientation = "horizontal"
+    p.legend.location = "top_center"
+
+    # Add hover tool
+    hover = HoverTool()
+    hover.tooltips = [
+        ("Name", "@names"),
+        ("Average Placement", "@avg_placements"),
+        ("image", "<img src='@image_urls' width='50' height='50'>")
+    ]
+    p.add_tools(hover)
+
+    return p
 
 def make_graphs():
-    visualize_csv_data('item_placements.csv', 'images/items', 'Average Placement of Items', 'Items')
-    visualize_csv_data('unit_placements.csv', 'images/champions', 'Average Placement of Champions', 'Champions')
-    visualize_csv_data('total_trait_placement.csv', 'images/traits', 'Average Placement of Traits', 'Traits')
-    visualize_csv_data('augment_placements.csv', 'images/augments', 'Average Placement of Augments', 'Augments')
+    plots = []
+    plots.append(visualize_csv_data('item_placements.csv', 'images/items', 'Average Placement of Items', 'Items'))
+    plots.append(visualize_csv_data('unit_placements.csv', 'images/champions', 'Average Placement of Champions', 'Champions'))
+    plots.append(visualize_csv_data('total_trait_placement.csv', 'images/traits', 'Average Placement of Traits', 'Traits'))
+    plots.append(visualize_csv_data('augment_placements.csv', 'images/augments', 'Average Placement of Augments', 'Augments'))
+
+    # Arrange plots in a column layout
+    layout = column(*plots)
+
+    # Output to a single HTML file
+    output_file("Output/combined_plots.html")
+    save(layout)
+    webbrowser.open("Output/combined_plots.html")
+
+
+make_graphs()
